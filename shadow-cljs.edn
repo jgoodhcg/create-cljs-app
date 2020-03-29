@@ -1,4 +1,5 @@
-{:builds
+{:deps true
+ :builds
  {:e2e {:ns-regexp "e2e.*"
         :output-to "out/e2e.js"
         :target :node-test}
@@ -8,6 +9,5 @@
   :test {:ns-regexp "create-cljs-ap.*-spec$"
          :output-to "out/test.js"
          :target :node-test}}
- :dependencies []
  :nrepl {:port 3333}
  :source-paths ["src"]}
