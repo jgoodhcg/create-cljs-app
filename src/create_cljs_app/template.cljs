@@ -17,6 +17,7 @@
 Will likely need to be replaced with a proper templating library."
   [name commands]
   {"package.json" [{:from "__NAME__" :to name}]
+   "app.json" [{:from "__NAME__" :to name}]
    "public/index.html" [{:from "__NAME__" :to name}]
    "src/app/hello.cljs" [{:from "__NAME__" :to name}]
    "README.md" [{:from "__START__" :to (:start commands)}
