@@ -13,10 +13,11 @@
 
 
 (defn create
-  "Create an app from the template files on the given path."
+  "Create an app from the template files on the given path.
+  Optional `options` can have `:begin-msg` `:done-msg` and `:install-extras` functions"
   ([cwd path]
-   (create cwd path true))
-  ([cwd path display-done-msg]
+   (create cwd path {}))
+  ([cwd path options]
    ; Bail early if the node version is unsupported.
    (when (not (is-supported-node? (.-version js/process)))
     (node-error)
@@ -33,7 +34,9 @@
       (existsSync abs-path) (exit-with-reason "A folder with the same name already exists.")
 
       :else (do
-              (begin-msg abs-path)
+              (if-some [alt-begin-msg (:begin-msg options)]
+                (alt-begin-msg abs-path)
+                (begin-msg abs-path))
               (use-template abs-path name commands)
               (.chdir js/process path)
               (install-packages-msg)
@@ -53,8 +56,11 @@
                                         ; Catch and remove the .git directory to not leave it
                                         ; half-done.
                          (catch js/Object _e (rm "-rf" ".git")))))
+                   (when-some [install-extras (:install-extras options)]
+                     (install-extras))
                    (when (not (has-java?)) (java-warning))
-                   (when display-done-msg
+                   (if-some [alt-done-msg (:done-msg options)]
+                     (alt-done-msg name path abs-path install-failed?)
                      (done-msg name path abs-path commands install-failed?))))))))))
 
 (def exports #js {:create create})
