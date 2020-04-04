@@ -14,7 +14,7 @@
 
 (defn create
   "Create an app from the template files on the given path.
-  Optional `options` can have `:begin-msg` `:done-msg` and `:install-extras` functions"
+  Optional `options` can have `:begin-msg`, `:done-msg`, `:get-commands`, `:has-extras?`, `:extras-warning` "
   ([cwd path]
    (create cwd path {}))
   ([cwd path options]
@@ -27,7 +27,11 @@
          name     (basename abs-path)
          use-yarn (should-use-yarn?)
          use-git  (should-use-git?)
-         commands (get-commands use-yarn)]
+         commands (if-some [get-alt-commands (:get-commands options)]
+                    (get-alt-commands use-yarn)
+                    (get-commands use-yarn))
+
+         {:keys [has-extras? extras-warning]} options]
 
     (cond
       (= path "")           (exit-with-reason "You must provide a name for your app.")
@@ -59,8 +63,9 @@
                    (when-some [install-extras (:install-extras options)]
                      (install-extras))
                    (when (not (has-java?)) (java-warning))
+                   (when (not (has-extras?)) (extras-warning))
                    (if-some [alt-done-msg (:done-msg options)]
-                     (alt-done-msg name path abs-path install-failed?)
+                     (alt-done-msg name path abs-path commands install-failed?)
                      (done-msg name path abs-path commands install-failed?))))))))))
 
 (def exports #js {:create create})
